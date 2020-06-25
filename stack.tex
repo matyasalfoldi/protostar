@@ -83,4 +83,14 @@ Idea 2: Check with gdb what the address for the ret is in the stack, overwrite t
 Decision: going with Idea 2\newline
 We need 68-84 filler chars bffffd30 in hex, and also reversed and 0xcccccccc.\newline
 76 filler chars are needed, afterwards 30fdffbfcccccccc (in hex) and if we use gdb stack5, then run <inputFile it stops at our cc.
+\section*{stack6}
+\markright{}
+\addcontentsline{toc}{section}{stack6}
+Source code:\newline
+https://web.archive.org/web/20140405142902/http://exploit-exercises.com/protostar/stack6\newline
+Here the return address, can't start with 0xbf(I guess it is the stack), so it has to be solved in another way.\newline
+Idea 1 (Very simple example of return oriented programming): After the filler string modify the ret value to point to itself, then the next value will point to after itself, where the shell code will be located(int 3).\newline
+Idea 2 (ret2libc): Because there is no aslr, I could also use print system, and search where I find the string /bin/sh or /bin/bash in memory, but this wouldn't work with aslr enabled.\newline
+(print system outputs 0xb7ecffb0, and find for /bin/sh gives us 0xb7fba23f)\newline
+So we have to place 0xb7ecffb0 first after the filler chars, then a value to which system should return, and lastly 0xb7fba23f\newline
 \end{document}
