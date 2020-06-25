@@ -1,0 +1,72 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\begin{document}
+\title{Stack}
+\author{Alföldi Mátyás}
+\maketitle
+\tableofcontents
+\pagebreak
+\section*{stack0}
+\markright{}
+\addcontentsline{toc}{section}{stack0}
+This challange is relative simple, the following code is given:
+\begin{verbatim}
+int main(int argc, char **argv)
+{
+  volatile int modified;
+  char buffer[64];
+  modified = 0;
+  gets(buffer);
+
+  if(modified != 0) {
+    printf("you have changed the 'modified' variable\n");
+  } else {
+    printf("Try again?\n");
+  }
+}
+\end{verbatim}
+I just gave the following input for this:\newline
+10xa 10xb 10xc 10xd 10xe 10xf 10xg (So basically something that is longer than 64)
+\section*{stack1}
+\markright{}
+\addcontentsline{toc}{section}{stack1}
+Source code:\newline
+https://web.archive.org/web/20170419031559/https://exploit-exercises.com/protostar/stack1/\newline
+This time the argument has to be longer than 64, and 0x61626364 has to go into the variable, which is the ascii code for abcd, but because of the endianness has to be reversed.
+\section*{stack2}
+\markright{}
+\addcontentsline{toc}{section}{stack2}
+Source code:\newline
+https://web.archive.org/web/20170419023252/https://exploit-exercises.com/protostar/stack2/\newline
+Answer:\newline
+Same as above but \textbackslash n \textbackslash r \textbackslash n \textbackslash r has to be used.
+\section*{stack3}
+\markright{}
+\addcontentsline{toc}{section}{stack3}
+Source code:\newline
+https://web.archive.org/web/20170417130221/https://exploit-exercises.com/protostar/stack3/\newline
+For this one we use objdump -d to get the address of the win function, which seems to be 08048424.\newline
+Using /bin/echo -e -n '64 filler chars\textbackslash x24\textbackslash x84\textbackslash x04\textbackslash x08' | ./stack3 does the work
+\section*{stack4}
+\markright{}
+\addcontentsline{toc}{section}{stack4}
+Source code:\newline
+https://web.archive.org/web/20170417130121/https://exploit-exercises.com/protostar/stack4/\newline
+During the call to main the location to where the ret should return is pushed into the stack, so after checking with objdump the address of the win function a long enough input has to be generated so that we overwrite that.\newline
+win is at: 080483f4\newline
+Looking at main the following instructions modify esp:\newline
+\begin{itemize}
+\item push ebp
+\item and esp, 0xfffffff0
+\item sub esp, 0x50
+\end{itemize}
+And the following changes how long our filler string has to be:
+\begin{itemize}
+\item lea eax,[esp+0x10]
+\item mov DWORD PTR [esp],eax
+\end{itemize}
+This way esp+0x10 gets passed to the gets function, and this means that the buffer is 64 long.\newline
+The push ebp modifies esp by 4, and the and esp, 0xfffffff0 by a max of 15, so 64 + 15 + 4 should be the max len needed.\newline
+So tests should be done with filler string len 68-84\newline
+In the end 76 x a and 080484f4 reversed for the endiannes(in hex) was the amount needed to change where the ret brings us.
+\end{document}
