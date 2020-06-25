@@ -68,5 +68,19 @@ And the following changes how long our filler string has to be:
 This way esp+0x10 gets passed to the gets function, and this means that the buffer is 64 long.\newline
 The push ebp modifies esp by 4, and the and esp, 0xfffffff0 by a max of 15, so 64 + 15 + 4 should be the max len needed.\newline
 So tests should be done with filler string len 68-84\newline
-In the end 76 x a and 080484f4 reversed for the endiannes(in hex) was the amount needed to change where the ret brings us.
+In the end 76 x a and 080484f4 reversed for the endiannes(in hex) was the amount needed to change where the ret brings us.\newline
+(Used /bin/echo -e -n for writing the hex codes into the file)
+\section*{stack5}
+\markright{}
+\addcontentsline{toc}{section}{stack5}
+Source code:\newline
+https://web.archive.org/web/20170419023355/https://exploit-exercises.com/protostar/stack5/\newline
+This time we have to change where the ret brings us like before, but we also need to bring our shellcode to the stack, and somehow need to know where the address of it will be, to change where the ret brings us to that.\newline
+The shellcode of our choice for the beginning 0xcc(int 3)\newline
+Idea 1: after main-s ret there are 5 nop bytes, bringing execution to the first would be simple, only we would have to somehow overwrite that location.(And patching the location wouldn't be using shellcode.)
+Idea 2: Check with gdb what the address for the ret is in the stack, overwrite that with its address+4, so that it will jump right after it, and place the shellcode there.\newline
+(This will only work though, because aslr is disabled, and non executable locations, since the stack is usually non executable.)\newline
+Decision: going with Idea 2\newline
+We need 68-84 filler chars bffffd30 in hex, and also reversed and 0xcccccccc.\newline
+76 filler chars are needed, afterwards 30fdffbfcccccccc (in hex) and if we use gdb stack5, then run <inputFile it stops at our cc.
 \end{document}
